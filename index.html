@@ -1,76 +1,56 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="x-ua-compatible" content="IE=edge">
-  <meta name="viewport"
-    content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
-  <title>喜欢就和好兄弟分享</title>
-  <link rel="stylesheet" href="https://g.alicdn.com/de/prismplayer/2.16.0/skins/default/aliplayer-min.css" />
-  <script type="text/javascript" charset="utf-8"
-    src="https://g.alicdn.com/de/prismplayer/2.16.0/aliplayer-min.js"></script>
-  <style>
-    body {
-      background-color: black;
-      /* 修改为黑色背景 */
-    }
-
-    #jumpButton {
-      display: block;
-      margin: 0 auto;
-      background-color: green;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>正在跳转…</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff; padding: 24px;
+  }
+  .card {
+    background: rgba(255,255,255,0.14); backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.25); border-radius: 20px;
+    padding: 36px 28px; max-width: 420px; width: 100%; text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+  h1 { font-size: 21px; margin: 0 0 12px; font-weight: 600; }
+  p { font-size: 14px; line-height: 1.7; opacity: 0.9; margin: 0 0 22px; }
+  a.btn {
+    display: block; padding: 15px 20px; border-radius: 12px; text-decoration: none;
+    background: #fff; color: #5b4bb8; font-weight: 700; font-size: 16px;
+    transition: transform .15s ease;
+  }
+  a.btn:active { transform: scale(0.97); }
+  .hint {
+    margin-top: 18px; font-size: 12px; line-height: 1.6; opacity: 0.75;
+  }
+  code { background: rgba(0,0,0,0.22); padding: 2px 6px; border-radius: 5px; font-size: 12px; }
+</style>
 </head>
-
 <body>
-  <div class="prism-player" id="player-con"></div>
-  <button id="jumpButton"></button>
-  <script type="text/javascript" charset="utf-8" src="https://cs.xssh.ren/tj.js"></script>
+  <div class="card">
+    <h1>即将跳转</h1>
+    <p>如果按钮没有反应，请点击右上角「···」，选择「在浏览器打开」。</p>
+    <a class="btn" id="go" href="https://proxy.567113.xyz/">进入</a>
+    <div class="hint">
+      备用地址：<br>
+      <code>https://p.567113.xyz/</code><br>
+      <code>https://a.567113.xyz/</code>
+    </div>
+  </div>
   <script>
-    // 获取URL中的视频地址参数
-    function getVideoUrlParam() {
-      const urlSearchParams = new URLSearchParams(window.location.search);
-      const encodedUrl = urlSearchParams.get('u');
-      const decodedUrl = atob(encodedUrl); // 解码 Base64 链接
-      return decodedUrl;
+    // 微信内置浏览器里自动跳转经常被拦，所以延迟一点、并且保留手动按钮
+    var target = 'https://proxy.567113.xyz/';
+    var ua = navigator.userAgent.toLowerCase();
+    var inWeixin = ua.indexOf('micromessenger') !== -1;
+    if (!inWeixin) {
+      setTimeout(function () { location.replace(target); }, 800);
     }
-
-    var player = new Aliplayer({
-      "id": "player-con",
-      "source": getVideoUrlParam(),
-      "width": "100%",
-      "height": "600px",
-      "autoplay": true,
-      "isLive": false,
-      "rePlay": false,
-      "playsinline": true,
-      "preload": true,
-      "controlBarVisibility": "hover",
-      "useH5Prism": true
-    }, function (player) {
-      console.log("The player is created");
-    }
-    );
-
-    // 获取按钮元素
-    var jumpButton = document.getElementById('jumpButton');
-
-    // 设置按钮点击事件
-    jumpButton.addEventListener('click', function () {
-      // 在这里替换为你想要跳转的网址
-      var url = '';
-
-      // 跳转到指定网址
-      window.location.href = url;
-    });
   </script>
 </body>
-
 </html>
