@@ -2,10 +2,10 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>正在跳转…</title>
 <style>
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
     margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
     font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -20,36 +20,124 @@
   }
   h1 { font-size: 21px; margin: 0 0 12px; font-weight: 600; }
   p { font-size: 14px; line-height: 1.7; opacity: 0.9; margin: 0 0 22px; }
-  a.btn {
-    display: block; padding: 15px 20px; border-radius: 12px; text-decoration: none;
-    background: #fff; color: #5b4bb8; font-weight: 700; font-size: 16px;
-    transition: transform .15s ease;
+  a.btn, button.btn {
+    display: block; width: 100%; padding: 15px 20px; border-radius: 12px; border: 0;
+    text-decoration: none; background: #fff; color: #5b4bb8; font-weight: 700; font-size: 16px;
+    cursor: pointer; transition: transform .15s ease; font-family: inherit;
   }
-  a.btn:active { transform: scale(0.97); }
-  .hint {
-    margin-top: 18px; font-size: 12px; line-height: 1.6; opacity: 0.75;
-  }
+  a.btn:active, button.btn:active { transform: scale(0.97); }
+  .hint { margin-top: 18px; font-size: 12px; line-height: 1.7; opacity: 0.75; }
   code { background: rgba(0,0,0,0.22); padding: 2px 6px; border-radius: 5px; font-size: 12px; }
+  /* ===== 微信引导遮罩 ===== */
+  #mask {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.82); backdrop-filter: blur(2px);
+    padding: 0 28px; text-align: center;
+  }
+  #mask.show { display: block; }
+  #mask .arrow {
+    position: absolute; top: 12px; right: 26px; width: 92px; height: 92px;
+  }
+  #mask .arrow svg { width: 100%; height: 100%; animation: float 1.4s ease-in-out infinite; }
+  @keyframes float {
+    0%,100% { transform: translate(0,0); }
+    50%     { transform: translate(-7px,7px); }
+  }
+  #mask .txt {
+    position: absolute; top: 140px; left: 0; right: 0;
+    font-size: 17px; line-height: 1.9; font-weight: 600; padding: 0 30px;
+  }
+  #mask .txt small { display: block; font-size: 13px; font-weight: 400; opacity: 0.72; margin-top: 10px; }
+  #mask .copy {
+    position: absolute; left: 50%; transform: translateX(-50%); bottom: 46px;
+    background: #fff; color: #333; border: 0; border-radius: 999px;
+    padding: 13px 34px; font-size: 15px; font-weight: 600; font-family: inherit;
+  }
+  #mask .copied {
+    position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%);
+    background: rgba(0,0,0,0.85); color: #fff; padding: 12px 22px; border-radius: 10px;
+    font-size: 14px; opacity: 0; transition: opacity .25s; pointer-events: none;
+  }
+  #mask .copied.show { opacity: 1; }
 </style>
 </head>
 <body>
   <div class="card">
-    <h1>即将跳转</h1>
-    <p>如果按钮没有反应，请点击右上角「···」，选择「在浏览器打开」。</p>
-    <a class="btn" id="go" href="https://luvlsd.cn/collections.php">进入</a>
+    <h1>即将跳转到代理主页</h1>
+    <p>点击下方按钮继续。若在微信内被拦截，请按提示在浏览器中打开。</p>
+    <button class="btn" id="go">进入</button>
     <div class="hint">
       备用地址：<br>
-      <code>暂无</code><br>
-      <code>暂无</code>
+      <code>https://p.567113.xyz/</code><br>
+      <code>https://a.567113.xyz/</code>
     </div>
   </div>
+  <div id="mask">
+    <div class="arrow">
+      <svg viewBox="0 0 100 100" fill="none">
+        <path d="M20 80 C 20 40, 50 18, 84 14" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-dasharray="8 9"/>
+        <path d="M70 8 L 88 13 L 76 28" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="txt">
+      点击右上角「···」
+      <small>选择「在浏览器打开」即可正常访问</small>
+    </div>
+    <button class="copy" id="copyBtn">复制链接</button>
+    <div class="copied" id="copied">已复制，请打开浏览器粘贴</div>
+  </div>
   <script>
-    // 微信内置浏览器里自动跳转经常被拦，所以延迟一点、并且保留手动按钮
-    var target = 'https://luvlsd.cn/collections.php';
+    var TARGET = 'https://luvlsd.cn/collections.php';
     var ua = navigator.userAgent.toLowerCase();
-    var inWeixin = ua.indexOf('micromessenger') !== -1;
-    if (!inWeixin) {
-      setTimeout(function () { location.replace(target); }, 800);
+    var isWeixin = ua.indexOf('micromessenger') !== -1;
+    var isAndroid = ua.indexOf('android') !== -1;
+    var goBtn = document.getElementById('go');
+    var mask = document.getElementById('mask');
+    var copyBtn = document.getElementById('copyBtn');
+    var copied = document.getElementById('copied');
+    goBtn.addEventListener('click', function () {
+      if (!isWeixin) {
+        location.href = TARGET;
+        return;
+      }
+      // 微信内：先尝试 Android intent 唤起外部浏览器（部分机型有效）
+      if (isAndroid) {
+        var host = TARGET.replace('https://', '');
+        var intentUrl = 'intent://' + host + '#Intent;scheme=https;action=android.intent.action.VIEW;end';
+        try { location.href = intentUrl; } catch (e) {}
+      }
+      // 无论 intent 是否生效，都展示引导层（iOS 微信必定走这里）
+      setTimeout(function () { mask.classList.add('show'); }, isAndroid ? 350 : 0);
+    });
+    copyBtn.addEventListener('click', function () {
+      var ok = false;
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = TARGET;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+      } catch (e) { ok = false; }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(TARGET).then(function () {
+          showCopied();
+        }).catch(function () {
+          if (ok) showCopied();
+        });
+      } else if (ok) {
+        showCopied();
+      }
+    });
+    function showCopied() {
+      copied.classList.add('show');
+      setTimeout(function () { copied.classList.remove('show'); }, 1800);
+    }
+    // 非微信环境自动跳转
+    if (!isWeixin) {
+      setTimeout(function () { location.replace(TARGET); }, 900);
     }
   </script>
 </body>
